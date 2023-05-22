@@ -1,5 +1,6 @@
 import pyxel
 
+
 class App:
     def __init__(self):
         pyxel.init(160, 120)
@@ -13,4 +14,7 @@ class App:
         pyxel.cls(0)
         pyxel.rect(self.x, 0, 8, 8, 9)
 
-App()
+
+# Pyxel app Running
+if __name__ == "__main__":
+    App()
