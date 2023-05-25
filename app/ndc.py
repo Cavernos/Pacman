@@ -20,8 +20,8 @@ class Sprite:
         ## Colision mur
         if (self.x < 0 and self.y < 49) or (self.x < 0 and self.y > 70):
             self.x = 0
-        if (self.x > 128 and self.y < 49) or (self.x > 128 and self.y > 70):
-            self.x = 128
+        if (self.x > 120 and self.y < 49) or (self.x > 120 and self.y > 70):
+            self.x = 120
 
         if (self.y < 0 and self.x < 49) or (self.y < 0 and self.x > 70): #colision mur du haut
             self.y = 0
