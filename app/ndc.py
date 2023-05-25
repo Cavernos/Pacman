@@ -26,8 +26,9 @@ class Sprite:
     def get_coords(self):
         return self.x, self.y
     
-    def set_coords(self, x, y):
+    def set_x(self, x):
         self.x = x
+    def set_y(self, y):   
         self.y = y
 
 class Hero(Sprite):
@@ -65,11 +66,28 @@ class Level:
     def __init__(self, hero: Hero) -> None:
         self.hero = hero
     def update(self):
-        pass
+        self.collision()
 
     def draw(self):
-        x, y = self.hero.get_coords()
         pyxel.bltm(0, 0, 0, 0, 0, 128, 128)
+    
+    def collision(self):
+        x, y = self.hero.get_coords()
+        if 40 <= x <= 80 and y == 40:
+            self.hero.set_y(y - 1)
+        if 40 <= x <= 80 and y == 80:
+            self.hero.set_y(y + 1)
+        if 40 <= y <= 80 and x == 40:
+            self.hero.set_x(x - 1)
+        if 40 <= y <= 80 and x == 80:
+            self.hero.set_x(x + 1)
+        if 0 <= y <= 8 and x == 40:
+            self.hero.set_x(x- 1)
+        if 0 <= y <= 8 and x == 80:
+            self.hero.set_x(x + 1)
+        if 40 <= x <= 80 and y == 8:
+            self.hero.set_y(y + 1)
+
 
 class TitleScreen:
     def __init__(self) -> None:
@@ -86,7 +104,7 @@ class App:
         pyxel.init(128, 128) ## Taille fenêtre
         self.resources = pyxel.load("..\\assets\\2.pyxres")
         self.titlescreen = TitleScreen() ## Création de l'écran titre
-        self.hero = Hero(64, 64, 24, 16) ## (64, 64) coordonnées de départ du héros, (24, 16) coordonnées de la texture du héros
+        self.hero = Hero(0, 0, 24, 16) ## (64, 64) coordonnées de départ du héros, (24, 16) coordonnées de la texture du héros
         self.level = Level(self.hero) ## Création de la map
         self.ia = []
         for i in range(3):
@@ -98,12 +116,10 @@ class App:
     def update(self):
         if pyxel.btnp(pyxel.KEY_ESCAPE): ## Quitte le jeu si la touche Echap est pressée
             pyxel.quit()
+        self.level.update()
         self.hero.update()
         for i in range(3):
                 self.ia[i].update()
-        x, y = self.hero.get_coords()
-        x_ia, y_ia = self.ia[0].get_coords()
-        print(x, y)
             
             
     def draw(self):
