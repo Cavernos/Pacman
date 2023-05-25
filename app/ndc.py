@@ -124,6 +124,7 @@ class App:
         self.hero = Hero(0, 0, 24, 16) ## (64, 64) coordonnées de départ du héros, (24, 16) coordonnées de la texture du héros
         self.level = Level(self.hero) ## Création de la map
         self.ia = []
+        pyxel.Music.set = pyxel.play(0, 1, loop=True)
         for i in range(3):
             x, y = pyxel.rndi(0, 128), pyxel.rndi(0, 128)
             self.ia.append(IA(x, y, 24, 8))
