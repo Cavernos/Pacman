@@ -36,6 +36,11 @@ class Level:
     def __init__(self) -> None:
         pass
 
+    def update(self):
+        pass
+    def draw(self):
+        pyxel.bltm(0, 0, 0, 0, 0, 128, 128)
+
 class Tree(Level):
     def __init__(self) -> None:
         super().__init__()
@@ -44,7 +49,8 @@ class App:
     def __init__(self):
         pyxel.init(128, 128)
         self.resources = pyxel.load("..\\assets\\2.pyxres")
-        self.hero = Hero(0, 0, 24, 16)
+        self.hero = Hero(0, 0)
+        self.level = Level()
         pyxel.run(self.update, self.draw)
 
     def update(self):
@@ -53,7 +59,9 @@ class App:
         self.hero.update()
     def draw(self):
         pyxel.cls(0)
+        self.level.draw()
         self.hero.draw()
+        
         
         
 
