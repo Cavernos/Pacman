@@ -1,17 +1,36 @@
 import pyxel
 
+class Sprite:
+    def __init__(self):
+        pass
+
+class Hero(Sprite):
+    def __init__(self):
+        super().__init__()
+
+class IA(Sprite):
+    def __init__(self):
+        super().__init__()
+
+class Level:
+    def __init__(self) -> None:
+        pass
+
+class Tree(Level):
+    def __init__(self) -> None:
+        super().__init__()
 
 class App:
     def __init__(self):
-        pyxel.init(160, 120)
-        self.x = 0
-        pyxel.run(self.update, self.draw)
-
-class sprite:
-    def __init__(self, x, y, img):
-        self.x = x
-        self.y = y
-        self.img = img
-        
+        pyxel.init(128, 128)
+    def update(self):
+        pass
     def draw(self):
-        pyxel.blt(self.x, self.y, 0, self.img, 0, 16, 16, 0)
+        pass
+        
+        
+
+
+# Pyxel app Running
+if __name__ == "__main__":
+    App()
