@@ -77,7 +77,7 @@ class Level: ## Gère la map
         self.hero = hero
         self.salle = "milieu"
     def update(self):
-        self.collision(self.salle)
+        pass
 
     def draw(self):
         x, y = self.hero.get_coords()
@@ -87,6 +87,7 @@ class Level: ## Gère la map
         if (40 <= x <= 80 and y == 128) and (self.salle == "haut") or self.salle == "milieu":
             self.salle = "milieu"
             pyxel.bltm(0, 0, 0, 0, 0, 128, 128)
+        self.collision(self.salle)
         
     
     def collision(self, salle):## Gère les collisions avec les murs
@@ -103,7 +104,9 @@ class Level: ## Gère la map
                     self.hero.set_x(x + 1)
             case "haut":
                  if 40 <= x <= 80 and y == 8:
-                    pyxel.text(64, 64, "YOU WIN", 7)
+                    self.salle = ""
+                    pyxel.cls(0)
+                    pyxel.text(64 - len("YOU WIN") / 2, 64, "YOU WIN", 7)
             
         
 
