@@ -56,23 +56,37 @@ class Tree(Level):
     def __init__(self) -> None:
         super().__init__()
 
+class titlescreen:
+    def __init__(self) -> None:
+        pass
+    def update(self):
+        pass
+    def draw(self):
+        pyxel.blt(57, 60, 0, 25, 32, 14, 7)
+
 class App:
     def __init__(self):
-        pyxel.init(128, 128)
+        pyxel.init(128, 128) ## Taille fenêtre
         self.resources = pyxel.load("..\\assets\\2.pyxres")
-        self.hero = Hero(64, 64, 24, 16)
-        self.level = Level()
-        pyxel.run(self.update, self.draw)
+        self.titlescreen = titlescreen() ## Création de l'écran titre
+        self.hero = Hero(64, 64, 24, 16) ## (64, 64) coordonnées de départ du héros, (24, 16) coordonnées de la texture du héros
+        self.level = Level() ## Création de la map
+        self.x = 0
+        pyxel.run(self.update, self.draw) ## Boucle principale
 
     def update(self):
-        if pyxel.btnp(pyxel.KEY_ESCAPE):
+        
+        if pyxel.btnp(pyxel.KEY_ESCAPE): ## Quitte le jeu si la touche Echap est pressée
             pyxel.quit()
         self.hero.update()
-
     def draw(self):
-        pyxel.cls(0)
-        self.level.draw()
-        self.hero.draw()
+        if self.x == 0:
+            self.titlescreen.draw() ## Dessine l'écran titre
+        if pyxel.btn(pyxel.KEY_SPACE) or self.x == 1: 
+            self.x = 1
+            pyxel.cls(0) ## Nettoie l'écran
+            self.level.draw() ## Dessine la map
+            self.hero.draw() ## Dessine le héros
         
         
         
