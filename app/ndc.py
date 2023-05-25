@@ -7,14 +7,11 @@ class App:
         self.x = 0
         pyxel.run(self.update, self.draw)
 
-    def update(self):
-        self.x = (self.x + 1) % pyxel.width
-
+class sprite:
+    def __init__(self, x, y, img):
+        self.x = x
+        self.y = y
+        self.img = img
+        
     def draw(self):
-        pyxel.cls(0)
-        pyxel.rect(self.x, 0, 8, 8, 9)
-
-
-# Pyxel app Running
-if __name__ == "__main__":
-    App()
+        pyxel.blt(self.x, self.y, 0, self.img, 0, 16, 16, 0)
