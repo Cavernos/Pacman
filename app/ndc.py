@@ -38,6 +38,7 @@ class Level:
 
     def update(self):
         pass
+
     def draw(self):
         pyxel.bltm(0, 0, 0, 0, 0, 128, 128)
 
@@ -48,8 +49,10 @@ class Tree(Level):
 class titlescreen:
     def __init__(self) -> None:
         pass
+
     def update(self):
         pass
+
     def draw(self):
         pyxel.blt(57, 60, 0, 25, 32, 14, 7)
 
@@ -64,7 +67,6 @@ class App:
         pyxel.run(self.update, self.draw) ## Boucle principale
 
     def update(self):
-        
         if pyxel.btnp(pyxel.KEY_ESCAPE): ## Quitte le jeu si la touche Echap est pressée
             pyxel.quit()
         self.hero.update()
