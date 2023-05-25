@@ -114,6 +114,7 @@ class TitleScreen:
         pass
 
     def draw(self):
+        pyxel.text(24, 50, "Espace pour commencer", 7)
         pyxel.blt(57, 60, 0, 25, 32, 14, 7)
 
 class App:
@@ -149,6 +150,7 @@ class App:
             self.hero.draw() ## Dessine le héros
             for i in range(3):
                 self.ia[i].draw()
+            pyxel.text(0, 2, "  Trouve la            cle !", 7)
         
         
         
