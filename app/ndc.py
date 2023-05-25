@@ -49,16 +49,6 @@ class Hero(Sprite):
         elif pyxel.btn(pyxel.KEY_Q) or pyxel.btn(pyxel.KEY_LEFT):
             self.x = self.x - 1
             self.update_sprit(self.x, self.y)
-
-class IA(Sprite):
-    def __init__(self, x, y, text_x, text_y):
-        super().__init__(x, y, text_x, text_y)
-
-
-    def update(self):
-        super().update()
-        self.x = self.x + 1
-
         
         
 
@@ -81,12 +71,6 @@ class Level:
             self.hero.set_x(x - 1)
         if 40 <= y <= 80 and x == 80:
             self.hero.set_x(x + 1)
-        if 0 <= y <= 8 and x == 40:
-            self.hero.set_x(x- 1)
-        if 0 <= y <= 8 and x == 80:
-            self.hero.set_x(x + 1)
-        if 40 <= x <= 80 and y == 8:
-            self.hero.set_y(y + 1)
 
 
 class TitleScreen:
@@ -105,12 +89,8 @@ class App:
         self.resources = pyxel.load("..\\assets\\2.pyxres")
         self.titlescreen = TitleScreen() ## Création de l'écran titre
         self.hero = Hero(0, 0, 24, 16) ## (64, 64) coordonnées de départ du héros, (24, 16) coordonnées de la texture du héros
+        self.index = 0
         self.level = Level(self.hero) ## Création de la map
-        self.ia = []
-        for i in range(3):
-            x, y = pyxel.rndi(0, 128), pyxel.rndi(0, 128)
-            self.ia.append(IA(x, y, 24, 8))
-        self.x = 0
         pyxel.run(self.update, self.draw) ## Boucle principale
 
     def update(self):
@@ -118,20 +98,16 @@ class App:
             pyxel.quit()
         self.level.update()
         self.hero.update()
-        for i in range(3):
-                self.ia[i].update()
             
             
     def draw(self):
-        if self.x == 0:
+        if self.index == 0:
             self.titlescreen.draw() ## Dessine l'écran titre
-        if pyxel.btn(pyxel.KEY_SPACE) or self.x == 1: 
-            self.x = 1
+        if pyxel.btn(pyxel.KEY_SPACE) or self.index == 1: 
+            self.index = 1
             pyxel.cls(0) ## Nettoie l'écran
             self.level.draw() ## Dessine la map
             self.hero.draw() ## Dessine le héros
-            for i in range(3):
-                self.ia[i].draw()
         
         
         
