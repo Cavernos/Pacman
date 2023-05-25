@@ -24,6 +24,11 @@ class Level:
     def __init__(self) -> None:
         pass
 
+    def update(self):
+
+    def draw(self):
+        
+
 class Tree(Level):
     def __init__(self) -> None:
         super().__init__()
