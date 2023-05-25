@@ -67,21 +67,13 @@ class Hero(Sprite):
             self.x = self.x - 1
             self.update_sprit(self.x, self.y)
 
-class IA(Sprite):
-    def __init__(self, x, y, text_x, text_y):
-        super().__init__(x, y, text_x, text_y)
-
-
-    def update(self):
-        super().update()
-        self.x = self.x + 1
-
         
         
 
 class Level: ## Gère la map
     def __init__(self, hero: Hero) -> None:
         self.hero = hero
+        self.salle = "milieu"
     def update(self):
         pass
 
@@ -133,11 +125,7 @@ class App:
         self.titlescreen = TitleScreen() ## Création de l'écran titre
         self.hero = Hero(0, 0, 24, 16) ## (64, 64) coordonnées de départ du héros, (24, 16) coordonnées de la texture du héros
         self.level = Level(self.hero) ## Création de la map
-        self.ia = []
-        for i in range(3):
-            x, y = pyxel.rndi(0, 128), pyxel.rndi(0, 128)
-            self.ia.append(IA(x, y, 24, 8))
-        self.x = 0
+        self.index = 0
         pyxel.run(self.update, self.draw) ## Boucle principale
 
     def update(self):
@@ -145,20 +133,16 @@ class App:
             pyxel.quit()
         self.level.update()
         self.hero.update()
-        for i in range(3):
-                self.ia[i].update()
             
             
     def draw(self):
-        if self.x == 0:
+        if self.index == 0:
             self.titlescreen.draw() ## Dessine l'écran titre
-        if pyxel.btn(pyxel.KEY_SPACE) or self.x == 1: 
-            self.x = 1
+        if pyxel.btn(pyxel.KEY_SPACE) or self.index == 1: 
+            self.index = 1
             pyxel.cls(0) ## Nettoie l'écran
             self.level.draw() ## Dessine la map
             self.hero.draw() ## Dessine le héros
-            for i in range(3):
-                self.ia[i].draw()
             pyxel.text(0, 2, "  Trouve la            cle !", 7)
         
         
