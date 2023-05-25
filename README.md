@@ -23,5 +23,6 @@ Fonctionne avec python3.11.3
 
 # Pyxel Link
 https://github.com/kitao/pyxel
+https://prod.liveshare.vsengsaas.visualstudio.com/join?D74319AD16842449689FDA0E32A251147EF6
 
 		
