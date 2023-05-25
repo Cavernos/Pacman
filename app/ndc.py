@@ -11,18 +11,6 @@ class Sprite:
             self.y = 0
         if self.x <= 0 or self.x >= 128:
             self.x = 0
-        if pyxel.btn(pyxel.KEY_D) or pyxel.btn(pyxel.KEY_RIGHT):
-            self.x = self.x + 1
-            self.update_sprit(self.x, self.y)
-        elif pyxel.btn(pyxel.KEY_S) or pyxel.btn(pyxel.KEY_DOWN):
-            self.y = self.y + 1
-            self.update_sprit(self.x, self.y)
-        elif pyxel.btn(pyxel.KEY_Z) or pyxel.btn(pyxel.KEY_UP):
-            self.y = self.y - 1
-            self.update_sprit(self.x, self.y)
-        elif pyxel.btn(pyxel.KEY_Q) or pyxel.btn(pyxel.KEY_LEFT):
-            self.x = self.x - 1
-            self.update_sprit(self.x, self.y)
         
             
     def update_sprit(self, x, y):
@@ -35,28 +23,54 @@ class Sprite:
     def draw(self):
         pyxel.blt(self.x, self.y, 0, self.texture_pos_x, self.texture_pos_y, self.width, self.height)
 
+    def get_coords(self):
+        return self.x, self.y
+    
+    def set_coords(self, x, y):
+        self.x = x
+        self.y = y
+
 class Hero(Sprite):
     def __init__(self, x, y, text_x, text_y):
         super().__init__(x, y, text_x, text_y)
+    
+    def update(self):
+        super().update()
+        if pyxel.btn(pyxel.KEY_D) or pyxel.btn(pyxel.KEY_RIGHT):
+            self.x = self.x + 1
+            self.update_sprit(self.x, self.y)
+        elif pyxel.btn(pyxel.KEY_S) or pyxel.btn(pyxel.KEY_DOWN):
+            self.y = self.y + 1
+            self.update_sprit(self.x, self.y)
+        elif pyxel.btn(pyxel.KEY_Z) or pyxel.btn(pyxel.KEY_UP):
+            self.y = self.y - 1
+            self.update_sprit(self.x, self.y)
+        elif pyxel.btn(pyxel.KEY_Q) or pyxel.btn(pyxel.KEY_LEFT):
+            self.x = self.x - 1
+            self.update_sprit(self.x, self.y)
 
 class IA(Sprite):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, x, y, text_x, text_y):
+        super().__init__(x, y, text_x, text_y)
+
+
+    def update(self):
+        super().update()
+        self.x = self.x + 1
+
+        
+        
 
 class Level:
-    def __init__(self) -> None:
-        pass
-
+    def __init__(self, hero: Hero) -> None:
+        self.hero = hero
     def update(self):
         pass
     def draw(self):
+        x, y = self.hero.get_coords()
         pyxel.bltm(0, 0, 0, 0, 0, 128, 128)
 
-class Tree(Level):
-    def __init__(self) -> None:
-        super().__init__()
-
-class titlescreen:
+class TitleScreen:
     def __init__(self) -> None:
         pass
     def update(self):
@@ -68,9 +82,13 @@ class App:
     def __init__(self):
         pyxel.init(128, 128) ## Taille fenêtre
         self.resources = pyxel.load("..\\assets\\2.pyxres")
-        self.titlescreen = titlescreen() ## Création de l'écran titre
+        self.titlescreen = TitleScreen() ## Création de l'écran titre
         self.hero = Hero(64, 64, 24, 16) ## (64, 64) coordonnées de départ du héros, (24, 16) coordonnées de la texture du héros
-        self.level = Level() ## Création de la map
+        self.level = Level(self.hero) ## Création de la map
+        self.ia = []
+        for i in range(3):
+            x, y = pyxel.rndi(0, 128), pyxel.rndi(0, 128)
+            self.ia.append(IA(x, y, 24, 8))
         self.x = 0
         pyxel.run(self.update, self.draw) ## Boucle principale
 
@@ -79,6 +97,13 @@ class App:
         if pyxel.btnp(pyxel.KEY_ESCAPE): ## Quitte le jeu si la touche Echap est pressée
             pyxel.quit()
         self.hero.update()
+        for i in range(3):
+                self.ia[i].update()
+        x, y = self.hero.get_coords()
+        x_ia, y_ia = self.ia[0].get_coords()
+        print(x, y)
+            
+            
     def draw(self):
         if self.x == 0:
             self.titlescreen.draw() ## Dessine l'écran titre
@@ -87,6 +112,8 @@ class App:
             pyxel.cls(0) ## Nettoie l'écran
             self.level.draw() ## Dessine la map
             self.hero.draw() ## Dessine le héros
+            for i in range(3):
+                self.ia[i].draw()
         
         
         
