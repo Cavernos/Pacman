@@ -7,10 +7,27 @@ class Sprite:
         self.texture_pos_x, self.texture_pos_y = text_x, text_y 
 
     def update(self):
-        if self.y <= 0 or self.y >= 128:
-            self.y = 0
-        if self.x <= 0 or self.x >= 128:
+        if (self.x < 0 and self.y > 40) and (self.x < 0 and self.y < 71): #apparait de l'autre coté de l'écran si dans la porte
+            self.x = 127
+        if (self.x > 128 and self.y > 40) and (self.x > 128 and self.y < 71):
             self.x = 0
+        
+        if (self.y < 0 and self.x > 40) and (self.y < 0 and self.x < 71):
+            self.y = 127
+        if (self.y > 128 and self.x > 40) and (self.y > 128 and self.x < 71):
+            self.y = 0
+        
+        ## Colision mur
+        if (self.x < 0 and self.y < 49) or (self.x < 0 and self.y > 70):
+            self.x = 0
+        if (self.x > 128 and self.y < 49) or (self.x > 128 and self.y > 70):
+            self.x = 128
+
+        if (self.y < 0 and self.x < 49) or (self.y < 0 and self.x > 70): #colision mur du haut
+            self.y = 0
+        if (self.y > 120 and self.x < 49) or (self.y > 120 and self.x > 70): #colision mur du bas
+            self.y = 120
+        
         
             
     def update_sprit(self, x, y):
