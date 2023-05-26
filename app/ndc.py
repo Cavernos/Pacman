@@ -67,43 +67,44 @@ class Hero(Sprite):
             self.x = self.x - 1
             self.update_sprit(self.x, self.y)
 
-class IA(Sprite):
-    def __init__(self, x, y, text_x, text_y):
-        super().__init__(x, y, text_x, text_y)
-
-
-    def update(self):
-        super().update()
-        self.x = self.x + 1
-
         
         
 
 class Level: ## Gère la map
     def __init__(self, hero: Hero) -> None:
         self.hero = hero
+        self.salle = "milieu"
     def update(self):
-        self.collision()
+        pass
 
     def draw(self):
-        pyxel.bltm(0, 0, 0, 0, 0, 128, 128)
-    
-    def collision(self): ## Gère les collisions avec les murs
         x, y = self.hero.get_coords()
-        if 40 <= x <= 80 and y == 40:
-            self.hero.set_y(y - 1)
-        if 40 <= x <= 80 and y == 80:
-            self.hero.set_y(y + 1)
-        if 40 <= y <= 80 and x == 40:
-            self.hero.set_x(x - 1)
-        if 40 <= y <= 80 and x == 80:
-            self.hero.set_x(x + 1)
-        if 0 <= y <= 8 and x == 40:
-            self.hero.set_x(x- 1)
-        if 0 <= y <= 8 and x == 80:
-            self.hero.set_x(x + 1)
-        if 40 <= x <= 80 and y == 8:
-            self.hero.set_y(y + 1)
+        if 40 <= x <= 80 and y == 0 and self.salle == "milieu" or self.salle == "haut":
+            pyxel.bltm(0, 0, 0, 128, 0, 128, 128)
+            self.salle = "haut"
+        if (40 <= x <= 80 and y == 128) and (self.salle == "haut") or self.salle == "milieu":
+            self.salle = "milieu"
+            pyxel.bltm(0, 0, 0, 0, 0, 128, 128)
+        self.collision(self.salle)
+        
+    
+    def collision(self, salle):## Gère les collisions avec les murs
+        x, y = self.hero.get_coords() 
+        match salle:
+            case "milieu":
+                if 40 <= x <= 80 and y == 40:
+                    self.hero.set_y(y - 1)
+                if 40 <= x <= 80 and y == 80:
+                    self.hero.set_y(y + 1)
+                if 40 <= y <= 80 and x == 40:
+                    self.hero.set_x(x - 1)
+                if 40 <= y <= 80 and x == 80:
+                    self.hero.set_x(x + 1)
+            case "haut":
+                 if 40 <= x <= 80 and y == 8:
+                    self.salle = ""
+                    pyxel.cls(0)
+                    pyxel.text(64 - len("YOU WIN") / 2, 64, "YOU WIN", 7)
 
 
 class TitleScreen:
@@ -124,12 +125,7 @@ class App:
         self.titlescreen = TitleScreen() ## Création de l'écran titre
         self.hero = Hero(0, 0, 24, 16) ## (64, 64) coordonnées de départ du héros, (24, 16) coordonnées de la texture du héros
         self.level = Level(self.hero) ## Création de la map
-        pyxel.Music.set = pyxel.play(0, 1, loop=True) 
-        self.ia = []
-        for i in range(3):
-            x, y = pyxel.rndi(0, 128), pyxel.rndi(0, 128)
-            self.ia.append(IA(x, y, 24, 8))
-        self.x = 0
+        self.index = 0
         pyxel.run(self.update, self.draw) ## Boucle principale
 
     def update(self):
@@ -137,20 +133,16 @@ class App:
             pyxel.quit()
         self.level.update()
         self.hero.update()
-        for i in range(3):
-                self.ia[i].update()
             
             
     def draw(self):
-        if self.x == 0:
+        if self.index == 0:
             self.titlescreen.draw() ## Dessine l'écran titre
-        if pyxel.btn(pyxel.KEY_SPACE) or self.x == 1: 
-            self.x = 1
+        if pyxel.btn(pyxel.KEY_SPACE) or self.index == 1: 
+            self.index = 1
             pyxel.cls(0) ## Nettoie l'écran
             self.level.draw() ## Dessine la map
             self.hero.draw() ## Dessine le héros
-            for i in range(3):
-                self.ia[i].draw()
             pyxel.text(0, 2, "  Trouve la            cle !", 7)
         
         
