@@ -87,26 +87,21 @@ class Level: ## Gère la map
                 if 40 <= y <= 80 and x == 80:
                     self.hero.set_x(x + 1)
 
-                if (x < 0 and y > 40) and (x < 0 and y < 71): #porte de gauche
+                if (x < 2 and y > 40) and (x < 2 and y < 71): #porte de gauche
                     self.hero.set_x(120)
-                    print("porte gauche")
-                if (x > 128 and y > 40) and (x > 128 and y < 71): #porte de droite
-                    print("Porte droite")
-                    self.hero.set_x(0)
-        
-                if (y <= 4 and x > 40) and (y <= 4 and x < 71): #porte du haut
-                    self.hero.set_y(110)
+                if (x > 127 and y > 40) and (x > 127 and y < 71): #porte de droite
+                    self.hero.set_x(50)
+                if (y <= 1 and x > 40) and (y <= 1 and x < 71): #porte du haut
+                    self.hero.set_y(127)
                     self.salle = "haut"
-                    print("test")
                 if (y > 128 and x > 40) and (y > 128 and x < 71): #porte du bas
-                    self.hero.set_y(0)
-                    print("porte bas")
-        
-                if x <= 0 or x >= 128: #colision mur droite
-                    self.hero.set_x(0)
+                    self.hero.set_y(2)
+
+
+                if x < 0 or x >= 128: #colision mur droite
+                    self.hero.set_x(1)
                 if (x > 120 and y < 49) or (x > 120 and y > 70): #colision mur de gauche
                     self.hero.set_x(120)
-
                 if (y < 0 and x < 49) or (y < 0 and x > 70): #colision mur du haut
                     self.hero.set_y(0)
                 if (y > 120 and x < 49) or (y > 120 and x > 70): #colision mur du bas
