@@ -7,27 +7,7 @@ class Sprite:
         self.texture_pos_x, self.texture_pos_y = text_x, text_y 
 
     def update(self):
-        if (self.x < 0 and self.y > 40) and (self.x < 0 and self.y < 71): #porte de gauche
-            self.x = 127
-        if (self.x > 128 and self.y > 40) and (self.x > 128 and self.y < 71): #porte de droite
-            self.x = 0
-        
-        if (self.y < 0 and self.x > 40) and (self.y < 0 and self.x < 71): #porte du haut
-            self.y = 127
-        if (self.y > 128 and self.x > 40) and (self.y > 128 and self.x < 71): #porte du bas
-            self.y = 0
-        
-        if self.x <= 0 or self.x >= 128: #colision mur droite
-            self.x = 0
-        if (self.x > 120 and self.y < 49) or (self.x > 120 and self.y > 70): #colision mur de droite
-            self.x = 120
-
-        if (self.y < 0 and self.x < 49) or (self.y < 0 and self.x > 70): #colision mur du haut
-            self.y = 0
-        if (self.y > 120 and self.x < 49) or (self.y > 120 and self.x > 70): #colision mur du bas
-            self.y = 120
-        
-
+        pass # Déplacé dans la classe
         
             
     def update_sprit(self, x, y):
@@ -67,7 +47,7 @@ class Hero(Sprite):
             self.x = self.x - 1
             self.update_sprit(self.x, self.y)
 
-        
+
         
 
 class Level: ## Gère la map
@@ -79,19 +59,25 @@ class Level: ## Gère la map
 
     def draw(self):
         x, y = self.hero.get_coords()
-        if 40 <= x <= 80 and y == 0 and self.salle == "milieu" or self.salle == "haut":
+        if self.salle == "haut": #Gère salle du haut
             pyxel.bltm(0, 0, 0, 128, 0, 128, 128)
+            #self.hero.set_y(120)
             self.salle = "haut"
-        if (40 <= x <= 80 and y == 128) and (self.salle == "haut") or self.salle == "milieu":
+        if self.salle == "milieu": #Gère salle du bas
             self.salle = "milieu"
             pyxel.bltm(0, 0, 0, 0, 0, 128, 128)
         self.collision(self.salle)
+    
+    def get_salle(self): ## Renvoie la salle actuelle
+        return self.salle
         
     
     def collision(self, salle):## Gère les collisions avec les murs
-        x, y = self.hero.get_coords() 
+        x, y = self.hero.get_coords()
         match salle:
             case "milieu":
+                pyxel.bltm(0, 0, 0, 0, 0, 128, 128)
+                print(x, y)
                 if 40 <= x <= 80 and y == 40:
                     self.hero.set_y(y - 1)
                 if 40 <= x <= 80 and y == 80:
@@ -100,8 +86,42 @@ class Level: ## Gère la map
                     self.hero.set_x(x - 1)
                 if 40 <= y <= 80 and x == 80:
                     self.hero.set_x(x + 1)
+
+                if (x < 0 and y > 40) and (x < 0 and y < 71): #porte de gauche
+                    self.hero.set_x(120)
+                    print("porte gauche")
+                if (x > 128 and y > 40) and (x > 128 and y < 71): #porte de droite
+                    print("Porte droite")
+                    self.hero.set_x(0)
+        
+                if (y <= 4 and x > 40) and (y <= 4 and x < 71): #porte du haut
+                    self.hero.set_y(110)
+                    self.salle = "haut"
+                    print("test")
+                if (y > 128 and x > 40) and (y > 128 and x < 71): #porte du bas
+                    self.hero.set_y(0)
+                    print("porte bas")
+        
+                if x <= 0 or x >= 128: #colision mur droite
+                    self.hero.set_x(0)
+                if (x > 120 and y < 49) or (x > 120 and y > 70): #colision mur de gauche
+                    self.hero.set_x(120)
+
+                if (y < 0 and x < 49) or (y < 0 and x > 70): #colision mur du haut
+                    self.hero.set_y(0)
+                if (y > 120 and x < 49) or (y > 120 and x > 70): #colision mur du bas
+                    self.hero.set_y(120)
+                
             case "haut":
-                 if 40 <= x <= 80 and y == 8:
+                print(x, y, 2)
+                pyxel.bltm(0, 0, 0, 128, 0, 128, 128)
+                
+                if (y > 128 and x > 40) and (y > 128 and x < 71): #porte du bas
+                    self.salle = "milieu"
+                    self.hero.set_y(9)
+                    print("porte bas")
+                
+                if 40 <= x <= 80 and y == 8:
                     self.salle = ""
                     pyxel.cls(0)
                     pyxel.text(64 - len("YOU WIN") / 2, 64, "YOU WIN", 7)
@@ -127,6 +147,7 @@ class App:
         self.level = Level(self.hero) ## Création de la map
         self.index = 0
         pyxel.run(self.update, self.draw) ## Boucle principale
+    
 
     def update(self):
         if pyxel.btnp(pyxel.KEY_ESCAPE): ## Quitte le jeu si la touche Echap est pressée
