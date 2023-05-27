@@ -140,6 +140,7 @@ class App:
         self.titlescreen = TitleScreen() ## Création de l'écran titre
         self.hero = Hero(0, 0, 24, 16) ## (64, 64) coordonnées de départ du héros, (24, 16) coordonnées de la texture du héros
         self.level = Level(self.hero) ## Création de la map
+        pyxel.Music.set = pyxel.play(0, 1, loop=True)
         self.index = 0
         pyxel.run(self.update, self.draw) ## Boucle principale
     
