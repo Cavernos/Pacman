@@ -1,7 +1,8 @@
 
-# Pacman
-Pacman avec Pyxel pour la nuit du code
-Fonctionne avec python3.11.3
+# Zelda like
+Jeu d'exploration comme Zelda avec Pyxel pour la nuit du code
+Fonctionne avec python3.11.3 ou - 
+Pas testé après python3.10
 
 ```shell
 	git clone https://github.com/Cavernos/Pacman.git
@@ -21,8 +22,11 @@ Fonctionne avec python3.11.3
   pyxel edit assets/resources.pyxres
 ```
 
+<video controls>
+  <source src="ndc_map.mp4" type="video/mp4">
+</video>
+
 # Pyxel Link
 https://github.com/kitao/pyxel
-https://prod.liveshare.vsengsaas.visualstudio.com/join?D74319AD16842449689FDA0E32A251147EF6
 
 		
