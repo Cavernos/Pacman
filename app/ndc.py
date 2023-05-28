@@ -56,11 +56,15 @@ class Level:  ## Gère la map
         # 1 Salle du Haut
         # 0 Salle du Milieu
         # -1 Salle du Bas
+        # -10 Salle de Gauche
+        # 10 Salle de droite
         self.salle = 0
         self.middle_room = Room(0, hero)
         self.nord_room = Room(1, hero)
         self.south_room = Room(-1, hero)
-        self.rooms = [self.nord_room, self.middle_room, self.south_room]
+        self.left_room = Room(-10, hero)
+        self.right_room = Room(10, hero)
+        self.rooms = [self.nord_room, self.middle_room, self.south_room, self.left_room, self.right_room]
 
     def update(self):
         match self.salle:
@@ -70,6 +74,10 @@ class Level:  ## Gère la map
                 self.rooms[0].update()
             case -1:
                 self.rooms[2].update()
+            case 10:
+                self.rooms[4].update()
+            case -10:
+                self.rooms[3].update()
 
     def draw(self):
         match self.salle:
@@ -85,6 +93,14 @@ class Level:  ## Gère la map
                 self.rooms[2].draw()
                 self.salle = self.rooms[2].getId()
                 self.rooms[2].setId(-1)
+            case 10:
+                self.rooms[4].draw()
+                self.salle = self.rooms[4].getId()
+                self.rooms[4].setId(10)
+            case -10:
+                self.rooms[3].draw()
+                self.salle = self.rooms[3].getId()
+                self.rooms[3].setId(-10)
 
         # self.collision(self.salle)
 
@@ -146,20 +162,39 @@ class Room:
     def __init__(self, index, hero: Hero):
         self.index = index
         self.hero = hero
-        self.door_north = Door(index + 1, 40, 1, 32, 2, 128)
-        self.door_south = Door(index - 1, 40, 127, 32, 2, 6)
-        self.doors = [self.door_north, self.door_south]
-        self.objects = [Well(self.getId(), 40, 40, 40, 40)]
+
+        # Definitions des portes et des index
+        # index_room_to_go, x, y, w, h, hero_x, hero_y
+        door_index = index + 1 if index < 1 else index
+        self.door_north = Door(door_index, 48, 1, 24, 2, 67, 128)
+        door_index = index - 1 if index > -1 else index
+        self.door_south = Door(door_index, 48, 127, 24, 2, 67, 6)
+        door_index = index - 10 if index > -10 else index
+        self.door_left = Door(door_index, 0, 40, 2, 32, 120, 67)
+        door_index = index + 10 if index < 10 else index
+        self.door_right = Door(door_index, 120, 40, 2, 32, 6, 67)
+        self.doors = [self.door_north, self.door_south, self.door_left, self.door_right]
+        self.objects = [Well(0, 40, 40, 40, 40), Chest(1, 48, 0, 24, 8)]
 
     # Gestion des Objet et des collision
     # Gestion des portes avec le changements de salle
     def update(self):
         hero_x, hero_y = self.hero.get_coords()
+        if hero_x >= 120:
+            self.hero.set_x(hero_x - 1)
+        if hero_y >= 128:
+            self.hero.set_y(hero_y - 1)
+        if hero_y <= 0:
+            self.hero.set_y(hero_y + 1)
+        if hero_x <= 0:
+            self.hero.set_x(hero_x + 1)
+
         for door in self.doors:
             door_x, door_y = door.get_coords()
             door_w, door_h = door.get_dims()
             if (door_x <= hero_x <= door_x + door_w) and (door_y <= hero_y <= door_y + door_h):
                 self.hero.set_y(door.get_hero_y() - 3)
+                self.hero.set_x(door.get_hero_x() - 3)
                 self.setId(door.get_id())
                 break
         for piece in self.objects:
@@ -187,7 +222,11 @@ class Room:
             case 1:
                 pyxel.bltm(0, 0, 0, 128, 0, 128, 128)
             case -1:
-                pyxel.bltm(0, 0, 0, 0, 256, 128, 128)
+                pyxel.bltm(0, 0, 0, 512, 0, 128, 128)
+            case 10:
+                pyxel.bltm(0, 0, 0, 384, 0, 128, 128)
+            case -10:
+                pyxel.bltm(0, 0, 0, 256, 0, 128, 128)
 
     def getId(self):
         return self.index
@@ -223,16 +262,25 @@ class Object:
 # h hauteur de l'objet
 # hero_y coordonnée de tp du perso principale
 class Door(Object):
-    def __init__(self, room_index, x, y, width, height, hero_y):
+    def __init__(self, room_index, x, y, width, height, hero_x, hero_y):
         super().__init__(room_index, x, y, width, height)
         self.hero_y = hero_y
+        self.hero_x = hero_x
 
     def get_hero_y(self):
         return self.hero_y
 
+    def get_hero_x(self):
+        return self.hero_x
+
 
 # Création d'un puit
 class Well(Object):
+    def __init__(self, index, x, y, w, h):
+        super().__init__(index, x, y, w, h)
+
+
+class Chest(Object):
     def __init__(self, index, x, y, w, h):
         super().__init__(index, x, y, w, h)
 
@@ -251,30 +299,36 @@ class TitleScreen:
 
 class App:
     def __init__(self):
-        pyxel.init(128, 128)  ## Taille fenêtre
-        self.resources = pyxel.load("..\\assets\\2.pyxres")
-        self.titlescreen = TitleScreen()  ## Création de l'écran titre
-        self.hero = Hero(0, 0, 24,
-                         16)  ## (64, 64) coordonnées de départ du héros, (24, 16) coordonnées de la texture du héros
-        self.level = Level(self.hero)  ## Création de la map
-        pyxel.Music.set = pyxel.play(0, 1, loop=True)
+        pyxel.init(128, 128)  # Taille fenêtre
+        pyxel.load("..\\assets\\2.pyxres")
+
+        # Création de l'écran titre
+        self.titlescreen = TitleScreen()
+
+        # (64, 64) coordonnées de départ du héros, (24, 16) coordonnées de la texture du héros
+        self.hero = Hero(0, 0, 24, 16)
+        # Création de la map
+        self.level = Level(self.hero)
+
+        # Musique
+        pyxel.play(0, 1, loop=True)
         self.index = 0
-        pyxel.run(self.update, self.draw)  ## Boucle principale
+        pyxel.run(self.update, self.draw)  # Boucle principale
 
     def update(self):
-        if pyxel.btnp(pyxel.KEY_ESCAPE):  ## Quitte le jeu si la touche Echap est pressée
+        if pyxel.btnp(pyxel.KEY_ESCAPE):  # Quitte le jeu si la touche Echap est pressée
             pyxel.quit()
         self.level.update()
         self.hero.update()
 
     def draw(self):
         if self.index == 0:
-            self.titlescreen.draw()  ## Dessine l'écran titre
+            self.titlescreen.draw()  # Dessine l'écran titre
         if pyxel.btn(pyxel.KEY_SPACE) or self.index == 1:
             self.index = 1
-            pyxel.cls(0)  ## Nettoie l'écran
-            self.level.draw()  ## Dessine la map
-            self.hero.draw()  ## Dessine le héros
+            pyxel.cls(0)  # Nettoie l'écran
+            self.level.draw()  # Dessine la map
+            self.hero.draw()  # Dessine le héros
             pyxel.text(0, 2, "  Trouve la            cle !", 7)
 
 
