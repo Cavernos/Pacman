@@ -22,10 +22,6 @@ Pas testé après python3.10
   pyxel edit assets/resources.pyxres
 ```
 
-<video controls>
-  <source src="ndc_map.mp4" type="video/mp4">
-</video>
-
 # Pyxel Link
 https://github.com/kitao/pyxel
 

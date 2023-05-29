@@ -35,7 +35,6 @@ class Hero(Sprite):
         super().__init__(x, y, text_x, text_y)
 
     def update(self):
-        super().update()
         if pyxel.btn(pyxel.KEY_D) or pyxel.btn(pyxel.KEY_RIGHT):
             self.x = self.x + 1
             self.update_sprite(self.x, self.y)
@@ -166,15 +165,14 @@ class Room:
         # Definitions des portes et des index
         # index_room_to_go, x, y, w, h, hero_x, hero_y
         door_index = index + 1 if index < 1 else index
-        self.door_north = Door(door_index, 48, 1, 24, 2, 67, 128)
+        self.door_north = Door(door_index, 48, 1, 24, 2, 67, 120)
         door_index = index - 1 if index > -1 else index
-        self.door_south = Door(door_index, 48, 127, 24, 2, 67, 6)
+        self.door_south = Door(door_index, 48, 120, 24, 2, 67, 6)
         door_index = index - 10 if index > -10 else index
         self.door_left = Door(door_index, 0, 40, 2, 32, 120, 67)
         door_index = index + 10 if index < 10 else index
         self.door_right = Door(door_index, 120, 40, 2, 32, 6, 67)
-        self.doors = [self.door_north, self.door_south, self.door_left, self.door_right]
-        self.objects = [Well(0, 40, 40, 40, 40), Chest(1, 48, 0, 24, 8)]
+        self.objects = []
 
     # Gestion des Objet et des collision
     # Gestion des portes avec le changements de salle
@@ -182,14 +180,15 @@ class Room:
         hero_x, hero_y = self.hero.get_coords()
         if hero_x >= 120:
             self.hero.set_x(hero_x - 1)
-        if hero_y >= 128:
+        if hero_y >= 120:
             self.hero.set_y(hero_y - 1)
         if hero_y <= 0:
             self.hero.set_y(hero_y + 1)
         if hero_x <= 0:
             self.hero.set_x(hero_x + 1)
+        self.objects = self.create_object_list()
 
-        for door in self.doors:
+        for door in self.objects[0]:
             door_x, door_y = door.get_coords()
             door_w, door_h = door.get_dims()
             if (door_x <= hero_x <= door_x + door_w) and (door_y <= hero_y <= door_y + door_h):
@@ -197,22 +196,37 @@ class Room:
                 self.hero.set_x(door.get_hero_x() - 3)
                 self.setId(door.get_id())
                 break
-        for piece in self.objects:
-            if piece.get_id() == self.getId():
-                object_x, object_y = piece.get_coords()
-                object_w, object_h = piece.get_dims()
-                if (object_x <= hero_x <= object_x + object_w) and hero_y == object_y:
-                    self.hero.set_y(hero_y - 1)
-                    break
-                if (object_y <= hero_y <= object_y + object_h) and hero_x == object_x:
-                    self.hero.set_x(hero_x - 1)
-                    break
-                if (object_x <= hero_x <= object_x + object_w) and hero_y == object_y + object_h:
-                    self.hero.set_y(hero_y + 1)
-                    break
-                if (object_y <= hero_y <= object_y + object_h) and hero_x == object_x + object_w:
-                    self.hero.set_x(hero_x + 1)
-                    break
+            for piece in self.objects[1]:
+                if piece.get_id() == self.getId():
+                    object_x, object_y = piece.get_coords()
+                    object_w, object_h = piece.get_dims()
+                    if (object_x <= hero_x <= object_x + object_w) and hero_y == object_y:
+                        self.hero.set_y(hero_y - 1)
+                        break
+                    if (object_y <= hero_y <= object_y + object_h) and hero_x == object_x:
+                        self.hero.set_x(hero_x - 1)
+                        break
+                    if (object_x <= hero_x <= object_x + object_w) and hero_y == object_y + object_h:
+                        self.hero.set_y(hero_y + 1)
+                        break
+                    if (object_y <= hero_y <= object_y + object_h) and hero_x == object_x + object_w:
+                        self.hero.set_x(hero_x + 1)
+                        break
+
+    def create_object_list(self):
+        match self.index:
+            case 0:
+                return [
+                    (self.door_north, self.door_south, self.door_left, self.door_right),
+                    (Well(0, 40, 40, 40, 40),)]
+            case 1:
+                return [(self.door_south,), (Chest(1, 48, 0, 24, 8),)]
+            case -1:
+                return [(self.door_north, self.door_south), ()]
+            case -10:
+                return [(self.door_right,), ()]
+            case 10:
+                return [(self.door_left,), ()]
 
     # Création de la salle en fonction de l'index
     def draw(self):
