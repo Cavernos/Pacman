@@ -1,10 +1,13 @@
+import time
+
 import pyxel
 
 
 class Sprite:
-    def __init__(self, x, y, text_x, text_y):
+    def __init__(self, x, y, text_x, text_y, health=3):
         self.x, self.y = x, y
         self.width, self.height = 8, 8
+        self.health = health
         self.texture_pos_x, self.texture_pos_y = text_x, text_y
 
     def update(self):
@@ -20,8 +23,17 @@ class Sprite:
     def draw(self):
         pyxel.blt(self.x, self.y, 0, self.texture_pos_x, self.texture_pos_y, self.width, self.height)
 
+    def death(self):
+        if self.health <= 0:
+            return True
+        else:
+            return False
+
     def get_coords(self):
         return self.x, self.y
+
+    def get_health(self):
+        return self.health
 
     def set_x(self, x):
         self.x = x
@@ -48,8 +60,19 @@ class Hero(Sprite):
             self.x = self.x - 1
             self.update_sprite(self.x, self.y)
 
+    def draw(self):
+        super().draw()
+        for i in range(self.health):
+            pyxel.blt(2 + 10 * i, 115, 0, 48, 24, 8, 8)
 
-class Level:  ## Gère la map
+    def set_health(self, health):
+        self.health = health
+
+    def damage(self, damage):
+        self.set_health(self.get_health() - damage)
+
+
+class Level:  # Gère la map
     def __init__(self, hero: Hero) -> None:
         self.hero = hero
         # 1 Salle du Haut
@@ -101,57 +124,8 @@ class Level:  ## Gère la map
                 self.salle = self.rooms[3].getId()
                 self.rooms[3].setId(-10)
 
-        # self.collision(self.salle)
-
     def set_room(self, room_id):
         self.salle = room_id
-
-    # def collision(self, salle):  # Gère les collisions avec les murs
-    #     x, y = self.hero.get_coords()
-    #     match salle:
-    #         case "milieu":
-    #             pyxel.bltm(0, 0, 0, 0, 0, 128, 128)
-    #             if 40 <= x <= 80 and y == 40:
-    #                 self.hero.set_y(y - 1)
-    #             if 40 <= x <= 80 and y == 80:
-    #                 self.hero.set_y(y + 1)
-    #             if 40 <= y <= 80 and x == 40:
-    #                 self.hero.set_x(x - 1)
-    #             if 40 <= y <= 80 and x == 80:
-    #                 self.hero.set_x(x + 1)
-    #
-    #             if (x < 2 and y > 40) and (x < 2 and y < 71):  # porte de gauche
-    #                 self.hero.set_x(120)
-    #             if (x > 127 and y > 40) and (x > 127 and y < 71):  # porte de droite
-    #                 self.hero.set_x(50)
-    #             if (y <= 1 and x > 40) and (y <= 1 and x < 71):  # porte du haut
-    #                 self.hero.set_y(127)
-    #                 self.salle = "haut"
-    #             if (y > 128 and x > 40) and (y > 128 and x < 71):  # porte du bas
-    #                 self.hero.set_y(2)
-    #
-    #             if x < 0 or x >= 128:  # colision mur droite
-    #                 self.hero.set_x(1)
-    #             if (x > 120 and y < 49) or (x > 120 and y > 70):  # colision mur de gauche
-    #                 self.hero.set_x(120)
-    #             if (y < 0 and x < 49) or (y < 0 and x > 70):  # colision mur du haut
-    #                 self.hero.set_y(0)
-    #             if (y > 120 and x < 49) or (y > 120 and x > 70):  # colision mur du bas
-    #                 self.hero.set_y(120)
-    #
-    #         case "haut":
-    #             print(x, y, 2)
-    #             pyxel.bltm(0, 0, 0, 128, 0, 128, 128)
-    #
-    #             if (y > 128 and x > 40) and (y > 128 and x < 71):  # porte du bas
-    #                 self.salle = "milieu"
-    #                 self.hero.set_y(9)
-    #                 print("porte bas")
-    #
-    #             if 40 <= x <= 80 and y == 8:
-    #                 self.salle = ""
-    #                 pyxel.cls(0)
-    #                 pyxel.text(64 - len("YOU WIN") / 2, 64, "YOU WIN", 7)
 
 
 # Création d'une
@@ -161,17 +135,6 @@ class Room:
     def __init__(self, index, hero: Hero):
         self.index = index
         self.hero = hero
-
-        # Definitions des portes et des index
-        # index_room_to_go, x, y, w, h, hero_x, hero_y
-        door_index = index + 1 if index < 1 else index
-        self.door_north = Door(door_index, 48, 1, 24, 2, 67, 120)
-        door_index = index - 1 if index > -1 else index
-        self.door_south = Door(door_index, 48, 120, 24, 2, 67, 6)
-        door_index = index - 10 if index > -10 else index
-        self.door_left = Door(door_index, 0, 40, 2, 32, 120, 67)
-        door_index = index + 10 if index < 10 else index
-        self.door_right = Door(door_index, 120, 40, 2, 32, 6, 67)
         self.objects = []
 
     # Gestion des Objet et des collision
@@ -213,20 +176,37 @@ class Room:
                         self.hero.set_x(hero_x + 1)
                         break
 
-    def create_object_list(self):
+            for piece in self.objects[2]:
+                if piece.get_id() == self.getId():
+                    object_x, object_y = piece.get_coords()
+                    object_w, object_h = piece.get_dims()
+                    if (object_x <= hero_x <= object_x + object_w) and (door_y <= hero_y <= door_y + door_h):
+                        break
+
+    def create_object_list(self) -> list[tuple]:
+        # Definitions des objets en fontion de l'id de chaque salle
+        # Liste de la forme [(Doors), (Simple Object), (Specific Object)]
         match self.index:
             case 0:
                 return [
-                    (self.door_north, self.door_south, self.door_left, self.door_right),
-                    (Well(0, 40, 40, 40, 40),)]
+                    (
+                        # Door North
+                        Door(1, 48, 1, 24, 2, 67, 120),
+                        # Door South
+                        Door(-1, 48, 120, 24, 2, 67, 6),
+                        # Door West
+                        Door(-10, 0, 40, 2, 32, 120, 67),
+                        # Door Est
+                        Door(10, 120, 40, 2, 32, 6, 67)),
+                    (Well(0, 40, 40, 40, 40),), ()]
             case 1:
-                return [(self.door_south,), (Chest(1, 48, 0, 24, 8),)]
+                return [(Door(0, 48, 120, 24, 2, 67, 6),), (), (Chest(1, 48, 0, 24, 8),)]
             case -1:
-                return [(self.door_north, self.door_south), ()]
+                return [(Door(0, 48, 1, 24, 2, 67, 120),  Door(-1, 48, 120, 24, 2, 67, 6)), (), ()]
             case -10:
-                return [(self.door_right,), ()]
+                return [(Door(0, 120, 40, 2, 32, 6, 67),), (), ()]
             case 10:
-                return [(self.door_left,), ()]
+                return [(Door(0, 0, 40, 2, 32, 120, 67),), (), ()]
 
     # Création de la salle en fonction de l'index
     def draw(self):
@@ -340,10 +320,16 @@ class App:
             self.titlescreen.draw()  # Dessine l'écran titre
         if pyxel.btn(pyxel.KEY_SPACE) or self.index == 1:
             self.index = 1
-            pyxel.cls(0)  # Nettoie l'écran
-            self.level.draw()  # Dessine la map
-            self.hero.draw()  # Dessine le héros
-            pyxel.text(0, 2, "  Trouve la            cle !", 7)
+            pyxel.cls(0)  # Passe l'écran au noir
+            if not self.hero.death():
+                self.level.draw()  # Dessine la map
+                self.hero.draw()  # Dessine le héros
+                pyxel.text(0, 2, "  Trouve la            cle !", 7)
+            else:
+                pyxel.text(47, 60, "You Lose", 7)
+                pyxel.text(24, 68, "Press m to restart", 7)
+                if pyxel.btn(pyxel.KEY_M):
+                    self.hero.set_health(3)
 
 
 # Pyxel app Running
