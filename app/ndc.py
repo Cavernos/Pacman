@@ -1,8 +1,13 @@
+import time
+
 import pyxel
 
 
+counter = 0
+
+
 class Sprite:
-    def __init__(self, x, y, text_x, text_y, health=2, armor=1):
+    def __init__(self, x, y, text_x, text_y, health=3, armor=3):
         self.x, self.y = x, y
         self.width, self.height = 8, 8
         self.health = health
@@ -26,6 +31,7 @@ class Sprite:
 
     def has_weapon(self):
         if self.weapon is not None:
+            self.weapon.set_hero(self)
             return True
         return False
 
@@ -73,7 +79,7 @@ class Hero(Sprite):
         for i in range(self.armor):
             pyxel.blt(85 + 10 * i, 115, 0, 32, 24, 8, 8, 2)
         if self.weapon is not None:
-            self.weapon.draw(self.x, self.y)
+            self.weapon.draw()
             match self.weapon.get_id():
                 case 0:
                     pyxel.blt(115, 115, 0, 64, 8, 8, 8, 2)
@@ -88,7 +94,10 @@ class Hero(Sprite):
         self.armor = armor
 
     def damage(self, damage):
-        self.set_health(self.get_health() - damage)
+        if self.get_armor() >= 0:
+            self.set_armor(self.get_armor() - damage)
+        else:
+            self.set_health(self.get_health() - damage)
 
     def get_armor(self):
         return self.armor
@@ -319,22 +328,32 @@ class Chest(Object):
 
     def update(self):
         loot_index = pyxel.rndi(0, len(self.loot) - 1)
-        return self.loot[loot_index]
+        return self.loot[0]
 
 
 class Weapon:
-    def __init__(self, index, damage):
+    def __init__(self, index, damage, hero: Hero = None):
         self.index = index
         self.damage = damage
+        self.hero = hero
 
     def update(self):
         pass
 
-    def draw(self, hero_x, hero_y):
+    def draw(self):
+        hero_x, hero_y = self.hero.get_coords()
+        global counter
         match self.index:
             case 0:
-                if pyxel.btn(pyxel.MOUSE_BUTTON_LEFT):
+                if pyxel.btn(pyxel.MOUSE_BUTTON_LEFT) and counter <= 0:
                     pyxel.line(hero_x + 8, hero_y + 4, hero_x + 10, hero_y + 4, 0)
+                    if self.hero is not None:
+                        self.hero.damage(self.damage)
+                    counter = 5
+                counter -= 1
+
+    def set_hero(self, hero):
+        self.hero = hero
 
     def get_id(self):
         return self.index
@@ -390,7 +409,11 @@ class App:
                 pyxel.text(47, 60, "You Lose", 7)
                 pyxel.text(24, 68, "Press m to restart", 7)
                 if pyxel.btn(pyxel.KEY_M):
+                    self.level.set_room(0)
                     self.hero.set_health(3)
+                    self.hero.set_x(0)
+                    self.hero.set_y(0)
+                    self.hero.set_weapon(None)
 
 
 # Pyxel app Running
