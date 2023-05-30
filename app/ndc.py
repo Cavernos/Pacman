@@ -1,5 +1,3 @@
-import time
-
 import pyxel
 
 
@@ -16,12 +14,11 @@ class Sprite:
     def update_sprite(self, x, y):
         if (x % 10 <= 5 or y % 10 >= 5) and (self.texture_pos_x == 24 and self.texture_pos_y == 16):
             self.texture_pos_x, self.texture_pos_y = 32, 16
-
         else:
             self.texture_pos_x, self.texture_pos_y = 24, 16
 
     def draw(self):
-        pyxel.blt(self.x, self.y, 0, self.texture_pos_x, self.texture_pos_y, self.width, self.height)
+        pyxel.blt(self.x, self.y, 0, self.texture_pos_x, self.texture_pos_y, self.width, self.height, 2)
 
     def death(self):
         if self.health <= 0:
@@ -50,20 +47,20 @@ class Hero(Sprite):
         if pyxel.btn(pyxel.KEY_D) or pyxel.btn(pyxel.KEY_RIGHT):
             self.x = self.x + 1
             self.update_sprite(self.x, self.y)
-        elif pyxel.btn(pyxel.KEY_S) or pyxel.btn(pyxel.KEY_DOWN):
+        if pyxel.btn(pyxel.KEY_S) or pyxel.btn(pyxel.KEY_DOWN):
             self.y = self.y + 1
             self.update_sprite(self.x, self.y)
-        elif pyxel.btn(pyxel.KEY_Z) or pyxel.btn(pyxel.KEY_UP):
+        if pyxel.btn(pyxel.KEY_Z) or pyxel.btn(pyxel.KEY_UP):
             self.y = self.y - 1
             self.update_sprite(self.x, self.y)
-        elif pyxel.btn(pyxel.KEY_Q) or pyxel.btn(pyxel.KEY_LEFT):
+        if pyxel.btn(pyxel.KEY_Q) or pyxel.btn(pyxel.KEY_LEFT):
             self.x = self.x - 1
             self.update_sprite(self.x, self.y)
 
     def draw(self):
         super().draw()
         for i in range(self.health):
-            pyxel.blt(2 + 10 * i, 115, 0, 48, 24, 8, 8)
+            pyxel.blt(2 + 10 * i, 115, 0, 48, 24, 8, 8, 2)
 
     def set_health(self, health):
         self.health = health
@@ -159,33 +156,33 @@ class Room:
                 self.hero.set_x(door.get_hero_x() - 3)
                 self.setId(door.get_id())
                 break
-            for piece in self.objects[1]:
-                if piece.get_id() == self.getId():
-                    object_x, object_y = piece.get_coords()
-                    object_w, object_h = piece.get_dims()
-                    if (object_x <= hero_x <= object_x + object_w) and hero_y == object_y:
-                        self.hero.set_y(hero_y - 1)
-                        break
-                    if (object_y <= hero_y <= object_y + object_h) and hero_x == object_x:
-                        self.hero.set_x(hero_x - 1)
-                        break
-                    if (object_x <= hero_x <= object_x + object_w) and hero_y == object_y + object_h:
-                        self.hero.set_y(hero_y + 1)
-                        break
-                    if (object_y <= hero_y <= object_y + object_h) and hero_x == object_x + object_w:
-                        self.hero.set_x(hero_x + 1)
-                        break
+        for piece in self.objects[1]:
+            if piece.get_id() == self.getId():
+                object_x, object_y = piece.get_coords()
+                object_w, object_h = piece.get_dims()
+                if (object_x <= hero_x <= object_x + object_w) and hero_y == object_y:
+                    self.hero.set_y(hero_y - 1)
+                    break
+                if (object_y <= hero_y <= object_y + object_h) and hero_x == object_x:
+                    self.hero.set_x(hero_x - 1)
+                    break
+                if (object_x <= hero_x <= object_x + object_w) and hero_y == object_y + object_h:
+                    self.hero.set_y(hero_y + 1)
+                    break
+                if (object_y <= hero_y <= object_y + object_h) and hero_x == object_x + object_w:
+                    self.hero.set_x(hero_x + 1)
+                    break
 
-            for piece in self.objects[2]:
-                if piece.get_id() == self.getId():
-                    object_x, object_y = piece.get_coords()
-                    object_w, object_h = piece.get_dims()
-                    if (object_x <= hero_x <= object_x + object_w) and (door_y <= hero_y <= door_y + door_h):
-                        break
+        for piece in self.objects[2]:
+            if piece.get_id() == self.getId():
+                object_x, object_y = piece.get_coords()
+                object_w, object_h = piece.get_dims()
+                if (object_x <= hero_x <= object_x + object_w) and (object_y <= hero_y <= object_y + object_h):
+                    break
 
     def create_object_list(self) -> list[tuple]:
         # Definitions des objets en fontion de l'id de chaque salle
-        # Liste de la forme [(Doors), (Simple Object), (Specific Object)]
+        # Liste de la forme [(Doors), (Simple Object), (Specific Object))]
         match self.index:
             case 0:
                 return [
