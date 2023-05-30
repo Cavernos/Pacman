@@ -2,14 +2,13 @@ import pyxel
 
 
 class Sprite:
-    def __init__(self, x, y, text_x, text_y, health=3):
+    def __init__(self, x, y, text_x, text_y, health=2, armor=1):
         self.x, self.y = x, y
         self.width, self.height = 8, 8
         self.health = health
+        self.armor = armor
+        self.weapon = None
         self.texture_pos_x, self.texture_pos_y = text_x, text_y
-
-    def update(self):
-        pass  # Déplacé dans la classe
 
     def update_sprite(self, x, y):
         if (x % 10 <= 5 or y % 10 >= 5) and (self.texture_pos_x == 24 and self.texture_pos_y == 16):
@@ -23,14 +22,21 @@ class Sprite:
     def death(self):
         if self.health <= 0:
             return True
-        else:
-            return False
+        return False
+
+    def has_weapon(self):
+        if self.weapon is not None:
+            return True
+        return False
 
     def get_coords(self):
         return self.x, self.y
 
     def get_health(self):
         return self.health
+
+    def get_weapon(self):
+        return self.weapon
 
     def set_x(self, x):
         self.x = x
@@ -57,16 +63,35 @@ class Hero(Sprite):
             self.x = self.x - 1
             self.update_sprite(self.x, self.y)
 
+        if self.has_weapon():
+            self.weapon.update()
+
     def draw(self):
         super().draw()
         for i in range(self.health):
-            pyxel.blt(2 + 10 * i, 115, 0, 48, 24, 8, 8, 2)
+            pyxel.blt(2 + 10 * i, 115, 0, 104, 8, 8, 8, 2)
+        for i in range(self.armor):
+            pyxel.blt(85 + 10 * i, 115, 0, 32, 24, 8, 8, 2)
+        if self.weapon is not None:
+            self.weapon.draw(self.x, self.y)
+            match self.weapon.get_id():
+                case 0:
+                    pyxel.blt(115, 115, 0, 64, 8, 8, 8, 2)
 
     def set_health(self, health):
         self.health = health
 
+    def set_weapon(self, weapon_index):
+        self.weapon = weapon_index
+
+    def set_armor(self, armor):
+        self.armor = armor
+
     def damage(self, damage):
         self.set_health(self.get_health() - damage)
+
+    def get_armor(self):
+        return self.armor
 
 
 class Level:  # Gère la map
@@ -130,6 +155,7 @@ class Level:  # Gère la map
 # personnage principal
 class Room:
     def __init__(self, index, hero: Hero):
+        self.use = 0
         self.index = index
         self.hero = hero
         self.objects = []
@@ -177,8 +203,23 @@ class Room:
             if piece.get_id() == self.getId():
                 object_x, object_y = piece.get_coords()
                 object_w, object_h = piece.get_dims()
-                if (object_x <= hero_x <= object_x + object_w) and (object_y <= hero_y <= object_y + object_h):
-                    break
+                if (object_x <= hero_x <= object_x + object_w) \
+                        and (object_y <= hero_y <= object_y + object_h) \
+                        and self.use == 0:
+                    self.use = 1
+                    match piece.update():
+                        case "health":
+                            if self.hero.get_health() <= 3:
+                                self.hero.set_health(self.hero.get_health() + 1)
+                            break
+                        case "armor":
+                            if self.hero.get_armor() <= 3:
+                                self.hero.set_armor(self.hero.get_armor() + 1)
+                            break
+                        case _:
+                            if isinstance(piece.update(), Weapon):
+                                self.hero.set_weapon(piece.update())
+                                break
 
     def create_object_list(self) -> list[tuple]:
         # Definitions des objets en fontion de l'id de chaque salle
@@ -199,7 +240,7 @@ class Room:
             case 1:
                 return [(Door(0, 48, 120, 24, 2, 67, 6),), (), (Chest(1, 48, 0, 24, 8),)]
             case -1:
-                return [(Door(0, 48, 1, 24, 2, 67, 120),  Door(-1, 48, 120, 24, 2, 67, 6)), (), ()]
+                return [(Door(0, 48, 1, 24, 2, 67, 120), Door(-1, 48, 120, 24, 2, 67, 6)), (), ()]
             case -10:
                 return [(Door(0, 120, 40, 2, 32, 6, 67),), (), ()]
             case 10:
@@ -274,6 +315,29 @@ class Well(Object):
 class Chest(Object):
     def __init__(self, index, x, y, w, h):
         super().__init__(index, x, y, w, h)
+        self.loot = [Weapon(0, 2), "health", "armor"]
+
+    def update(self):
+        loot_index = pyxel.rndi(0, len(self.loot) - 1)
+        return self.loot[loot_index]
+
+
+class Weapon:
+    def __init__(self, index, damage):
+        self.index = index
+        self.damage = damage
+
+    def update(self):
+        pass
+
+    def draw(self, hero_x, hero_y):
+        match self.index:
+            case 0:
+                if pyxel.btn(pyxel.MOUSE_BUTTON_LEFT):
+                    pyxel.line(hero_x + 8, hero_y + 4, hero_x + 10, hero_y + 4, 0)
+
+    def get_id(self):
+        return self.index
 
 
 class TitleScreen:
