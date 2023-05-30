@@ -13,7 +13,7 @@ class Sprite:
     def update_sprit(self, x, y):
         if (x%10 <= 5 or y%10 >= 5) and (self.texture_pos_x == 24 and self.texture_pos_y == 16):
             self.texture_pos_x, self.texture_pos_y = 32, 16
-           
+        
         else:
             self.texture_pos_x, self.texture_pos_y = 24, 16
 
@@ -37,13 +37,13 @@ class Hero(Sprite):
         if pyxel.btn(pyxel.KEY_D) or pyxel.btn(pyxel.KEY_RIGHT):
             self.x = self.x + 1
             self.update_sprit(self.x, self.y)
-        elif pyxel.btn(pyxel.KEY_S) or pyxel.btn(pyxel.KEY_DOWN):
+        if pyxel.btn(pyxel.KEY_S) or pyxel.btn(pyxel.KEY_DOWN):
             self.y = self.y + 1
             self.update_sprit(self.x, self.y)
-        elif pyxel.btn(pyxel.KEY_Z) or pyxel.btn(pyxel.KEY_UP):
+        if pyxel.btn(pyxel.KEY_Z) or pyxel.btn(pyxel.KEY_UP):
             self.y = self.y - 1
             self.update_sprit(self.x, self.y)
-        elif pyxel.btn(pyxel.KEY_Q) or pyxel.btn(pyxel.KEY_LEFT):
+        if pyxel.btn(pyxel.KEY_Q) or pyxel.btn(pyxel.KEY_LEFT):
             self.x = self.x - 1
             self.update_sprit(self.x, self.y)
 
