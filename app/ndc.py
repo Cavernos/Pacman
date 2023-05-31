@@ -1,5 +1,4 @@
-
-
+import random
 import pyxel
 
 counter = 0
@@ -230,12 +229,10 @@ class Room:
                     self.use = 1
                     match piece.update():
                         case "health":
-                            if self.hero.get_health() <= 3:
-                                self.hero.set_health(self.hero.get_health() + 1)
+                            self.hero.set_health(self.hero.get_health() + 1)
                             break
                         case "armor":
-                            if self.hero.get_armor() <= 3:
-                                self.hero.set_armor(self.hero.get_armor() + 1)
+                            self.hero.set_armor(self.hero.get_armor() + 1)
                             break
                         case _:
                             if isinstance(piece.update(), Weapon):
@@ -343,11 +340,17 @@ class Well(Object):
 class Chest(Object):
     def __init__(self, index, x, y, w, h):
         super().__init__(index, x, y, w, h)
+        # 5 % luck to have key, 10 % for pistol, 15 % for sword and 35 % for other
         self.loot = [Weapon(0, 2), "health", "armor", Weapon(1, 1), Key(0, 115, 115, 8, 8)]
 
     def update(self):
-        loot_index = pyxel.rndi(0, len(self.loot) - 1)
-        return self.loot[loot_index]
+        proba = [0.1, 0.35, 0.35, 0.15, 0.05]
+        global counter
+        if counter <= 0:
+            loot = random.choices(self.loot, proba)
+            counter = 10
+            return loot[0]
+        counter -= 1
 
     def draw(self, index):
         if index == 0:
