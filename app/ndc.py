@@ -1,7 +1,6 @@
-import time
+
 
 import pyxel
-
 
 counter = 0
 
@@ -30,7 +29,7 @@ class Sprite:
         return False
 
     def has_weapon(self):
-        if self.weapon is not None:
+        if isinstance(self.weapon, Weapon):
             self.weapon.set_hero(self)
             return True
         return False
@@ -52,8 +51,9 @@ class Sprite:
 
 
 class Hero(Sprite):
-    def __init__(self, x, y, text_x, text_y):
+    def __init__(self, x, y, text_x, text_y, key=None):
         super().__init__(x, y, text_x, text_y)
+        self.key = key
 
     def update(self):
         if pyxel.btn(pyxel.KEY_D) or pyxel.btn(pyxel.KEY_RIGHT):
@@ -78,11 +78,15 @@ class Hero(Sprite):
             pyxel.blt(2 + 10 * i, 115, 0, 104, 8, 8, 8, 2)
         for i in range(self.armor):
             pyxel.blt(85 + 10 * i, 115, 0, 32, 24, 8, 8, 2)
+        if self.key is not None:
+            self.key.draw()
         if self.weapon is not None:
             self.weapon.draw()
             match self.weapon.get_id():
                 case 0:
-                    pyxel.blt(115, 115, 0, 64, 8, 8, 8, 2)
+                    pyxel.blt(115, 105, 0, 64, 8, 8, 8, 2)
+                case 1:
+                    pyxel.blt(105, 105, 0, 24, 24, 8, 8, 2)
 
     def set_health(self, health):
         self.health = health
@@ -92,6 +96,14 @@ class Hero(Sprite):
 
     def set_armor(self, armor):
         self.armor = armor
+
+    def set_key(self, key):
+        self.key = key
+
+    def has_key(self):
+        if isinstance(self.key, Key):
+            return True
+        return False
 
     def damage(self, damage):
         if self.get_armor() >= 0:
@@ -229,10 +241,15 @@ class Room:
                             if isinstance(piece.update(), Weapon):
                                 self.hero.set_weapon(piece.update())
                                 break
+                            if isinstance(piece.update(), Key):
+                                self.hero.set_key(piece.update())
+                                break
+        if self.hero.death() or self.hero.has_key():
+            self.use = 0
 
     def create_object_list(self) -> list[tuple]:
         # Definitions des objets en fontion de l'id de chaque salle
-        # Liste de la forme [(Doors), (Simple Object), (Specific Object))]
+        # Liste de la forme [(Doors), (Simple Object), (Specific Object), (Enemies))]
         match self.index:
             case 0:
                 return [
@@ -268,6 +285,8 @@ class Room:
                 pyxel.bltm(0, 0, 0, 384, 0, 128, 128)
             case -10:
                 pyxel.bltm(0, 0, 0, 256, 0, 128, 128)
+        for piece in self.objects[2]:
+            piece.draw(0)
 
     def getId(self):
         return self.index
@@ -324,11 +343,17 @@ class Well(Object):
 class Chest(Object):
     def __init__(self, index, x, y, w, h):
         super().__init__(index, x, y, w, h)
-        self.loot = [Weapon(0, 2), "health", "armor"]
+        self.loot = [Weapon(0, 2), "health", "armor", Weapon(1, 1), Key(0, 115, 115, 8, 8)]
 
     def update(self):
         loot_index = pyxel.rndi(0, len(self.loot) - 1)
-        return self.loot[0]
+        return self.loot[loot_index]
+
+    def draw(self, index):
+        if index == 0:
+            pyxel.blt(self.x, self.y, 0, 112, 8, 16, 8, 2)
+        elif index == 1:
+            pyxel.blt(self.x, self.y, 0, 112, 8, 16, 8, 2)
 
 
 class Weapon:
@@ -349,7 +374,13 @@ class Weapon:
                     pyxel.line(hero_x + 8, hero_y + 4, hero_x + 10, hero_y + 4, 0)
                     if self.hero is not None:
                         self.hero.damage(self.damage)
-                    counter = 5
+                    counter = 20
+                counter -= 1
+            case 1:
+                if pyxel.btn(pyxel.MOUSE_BUTTON_LEFT) and counter <= 0:
+                    if self.hero is not None:
+                        self.hero.damage(self.damage)
+                    counter = 10
                 counter -= 1
 
     def set_hero(self, hero):
@@ -357,6 +388,14 @@ class Weapon:
 
     def get_id(self):
         return self.index
+
+
+class Key(Object):
+    def __init__(self, index, x, y, w, h):
+        super().__init__(index, x, y, w, h)
+
+    def draw(self):
+        pyxel.blt(self.x, self.y, 0, 88, 40, self.w, self.h, 2)
 
 
 class TitleScreen:
@@ -405,6 +444,18 @@ class App:
                 self.level.draw()  # Dessine la map
                 self.hero.draw()  # Dessine le héros
                 pyxel.text(0, 2, "  Trouve la            cle !", 7)
+                # Mécanique de win
+                # if self.hero.has_key():
+                #     pyxel.cls(0)
+                #     pyxel.text(47, 60, "You Win", 7)
+                #     if pyxel.btn(pyxel.KEY_M):
+                #         self.level.draw()
+                #         self.hero.draw()
+                #         self.hero.set_key(None)
+                #         self.level.set_room(0)
+                #         self.hero.set_health(3)
+                #         self.hero.set_x(0)
+                #         self.hero.set_y(0)
             else:
                 pyxel.text(47, 60, "You Lose", 7)
                 pyxel.text(24, 68, "Press m to restart", 7)
