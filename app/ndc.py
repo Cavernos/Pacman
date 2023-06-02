@@ -114,6 +114,16 @@ class Hero(Sprite):
         return self.armor
 
 
+class Enemies(Sprite):
+    def __init__(self, x, y, text_x, text_y):
+        super().__init__(x, y, text_x, text_y)
+
+    def update(self):
+        # self.x = self.x + pyxel.rndi(-1, 1)
+        # self.y = self.y + pyxel.rndi(-1, 1)
+        pass
+
+
 class Level:  # Gère la map
     def __init__(self, hero: Hero) -> None:
         self.hero = hero
@@ -183,6 +193,7 @@ class Room:
     # Gestion des Objet et des collision
     # Gestion des portes avec le changements de salle
     def update(self):
+        global counter
         hero_x, hero_y = self.hero.get_coords()
         if hero_x >= 120:
             self.hero.set_x(hero_x - 1)
@@ -234,13 +245,20 @@ class Room:
                         case "armor":
                             self.hero.set_armor(self.hero.get_armor() + 1)
                             break
-                        case _:
-                            if isinstance(piece.update(), Weapon):
-                                self.hero.set_weapon(piece.update())
-                                break
-                            if isinstance(piece.update(), Key):
-                                self.hero.set_key(piece.update())
-                                break
+                    if isinstance(piece.update(), Weapon):
+                        self.hero.set_weapon(piece.update())
+                        break
+                    if isinstance(piece.update(), Key):
+                        self.hero.set_key(piece.update())
+                        break
+        for enemies in self.objects[3]:
+            enemies.update()
+            enemies_x, enemies_y = enemies.get_coords()
+            if (enemies_x <= hero_x <= enemies_x + 8) and (enemies_y <= hero_y <= enemies_y + 8):
+                if counter <= 0:
+                    self.hero.damage(1)
+                    counter = 10
+                counter -= 1
         if self.hero.death() or self.hero.has_key():
             self.use = 0
 
@@ -259,15 +277,15 @@ class Room:
                         Door(-10, 0, 40, 2, 32, 120, 67),
                         # Door Est
                         Door(10, 120, 40, 2, 32, 6, 67)),
-                    (Well(0, 40, 40, 40, 40),), ()]
+                    (Well(0, 40, 40, 40, 40),), (), (Enemies(30, 60, 24, 8),)]
             case 1:
-                return [(Door(0, 48, 120, 24, 2, 67, 6),), (), (Chest(1, 48, 0, 24, 8),)]
+                return [(Door(0, 48, 120, 24, 2, 67, 6),), (), (Chest(1, 56, 0, 24, 8),), ()]
             case -1:
-                return [(Door(0, 48, 1, 24, 2, 67, 120), Door(-1, 48, 120, 24, 2, 67, 6)), (), ()]
+                return [(Door(0, 48, 1, 24, 2, 67, 120), Door(-1, 48, 120, 24, 2, 67, 6)), (), (), ()]
             case -10:
-                return [(Door(0, 120, 40, 2, 32, 6, 67),), (), ()]
+                return [(Door(0, 120, 40, 2, 32, 6, 67),), (), (), ()]
             case 10:
-                return [(Door(0, 0, 40, 2, 32, 120, 67),), (), ()]
+                return [(Door(0, 0, 40, 2, 32, 120, 67),), (), (), ()]
 
     # Création de la salle en fonction de l'index
     def draw(self):
@@ -283,7 +301,9 @@ class Room:
             case -10:
                 pyxel.bltm(0, 0, 0, 256, 0, 128, 128)
         for piece in self.objects[2]:
-            piece.draw(0)
+            piece.draw(self.use)
+        for enemies in self.objects[3]:
+            enemies.draw()
 
     def getId(self):
         return self.index
@@ -348,7 +368,7 @@ class Chest(Object):
         global counter
         if counter <= 0:
             loot = random.choices(self.loot, proba)
-            counter = 10
+            counter = 3
             return loot[0]
         counter -= 1
 
@@ -356,7 +376,7 @@ class Chest(Object):
         if index == 0:
             pyxel.blt(self.x, self.y, 0, 112, 8, 16, 8, 2)
         elif index == 1:
-            pyxel.blt(self.x, self.y, 0, 112, 8, 16, 8, 2)
+            pyxel.blt(self.x, self.y, 0, 136, 8, 16, 8, 2)
 
 
 class Weapon:
