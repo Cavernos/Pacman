@@ -240,7 +240,8 @@ class Room:
                     self.use = 1
                     match piece.update():
                         case "health":
-                            self.hero.set_health(self.hero.get_health() + 1)
+                            for hero in self.heros:
+                                hero.set_health(self.hero.get_health() + 1)
                             break
                         case "armor":
                             self.hero.set_armor(self.hero.get_armor() + 1)
@@ -442,9 +443,11 @@ class App:
         self.titlescreen = TitleScreen()
 
         # (64, 64) coordonnées de départ du héros, (24, 16) coordonnées de la texture du héros
-        self.hero = Hero(0, 0, 24, 16)
+        self.hero1 = Hero(0, 0, 24, 16)
+        self.hero2 = Hero(10, 10, 24, 16)
+        self.heros = [self.hero1, self.hero2]
         # Création de la map
-        self.level = Level(self.hero)
+        self.level = [Level(self.hero1), Level(self.hero2)]
 
         # Musique
         pyxel.play(0, 1, loop=True)
@@ -454,8 +457,10 @@ class App:
     def update(self):
         if pyxel.btnp(pyxel.KEY_ESCAPE):  # Quitte le jeu si la touche Echap est pressée
             pyxel.quit()
-        self.level.update()
-        self.hero.update()
+        for level in self.level:
+            level.update()
+        for hero in self.heros:
+            hero.update()
 
     def draw(self):
         if self.index == 0:
@@ -463,9 +468,11 @@ class App:
         if pyxel.btn(pyxel.KEY_SPACE) or self.index == 1:
             self.index = 1
             pyxel.cls(0)  # Passe l'écran au noir
-            if not self.hero.death():
-                self.level.draw()  # Dessine la map
-                self.hero.draw()  # Dessine le héros
+            for hero in self.heros:
+                if not hero.death():
+                    for level in self.level:
+                        level.draw()  # Dessine la map
+                    hero.draw()  # Dessine les héros
                 pyxel.text(0, 2, "  Trouve la            cle !", 7)
                 # Mécanique de win
                 # if self.hero.has_key():
@@ -483,11 +490,13 @@ class App:
                 pyxel.text(47, 60, "You Lose", 7)
                 pyxel.text(24, 68, "Press m to restart", 7)
                 if pyxel.btn(pyxel.KEY_M):
-                    self.level.set_room(0)
-                    self.hero.set_health(3)
-                    self.hero.set_x(0)
-                    self.hero.set_y(0)
-                    self.hero.set_weapon(None)
+                    for level in self.level:
+                        level.set_room(0)
+                    for hero in self.heros:
+                        hero.set_health(3)
+                        hero.set_x(0)
+                        hero.set_y(0)
+                        hero.set_weapon(None)
 
 
 # Pyxel app Running
